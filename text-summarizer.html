@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Text Summarizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    min-height:100vh;background:#fafaf7;font-family:'Manrope',sans-serif;color:#1a1a1a;
+    background-image:radial-gradient(ellipse at 70% 0%, #fff5e0 0%, transparent 50%),
+                     radial-gradient(ellipse at 0% 100%, #e8f4fd 0%, transparent 40%);
+  }
+  .container{max-width:900px;margin:0 auto;padding:48px 24px}
+  .header{margin-bottom:40px}
+  .tag{display:inline-block;background:#fff3d0;color:#b06000;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:16px;border:1px solid #fde68a}
+  h1{font-family:'Lora',serif;font-size:40px;color:#1a1a1a;margin-bottom:10px;line-height:1.15}
+  h1 em{color:#d97706;font-style:italic}
+  .desc{color:#666;font-size:15px;max-width:540px;line-height:1.6}
+
+  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+  @media(max-width:680px){.main-grid{grid-template-columns:1fr}}
+
+  .panel{background:#fff;border-radius:18px;border:1px solid #e8e8e0;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.04)}
+  .panel-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0e8;background:#fcfcf9}
+  .panel-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888}
+  .count{font-size:12px;color:#bbb;font-variant-numeric:tabular-nums}
+  textarea{
+    width:100%;min-height:280px;border:none;outline:none;resize:vertical;
+    padding:20px;font-family:'Manrope',sans-serif;font-size:14px;line-height:1.7;
+    color:#2a2a2a;background:#fff;
+  }
+  textarea::placeholder{color:#ccc}
+
+  .output-panel{background:#fff}
+  .output-body{padding:20px;min-height:280px;font-size:14px;line-height:1.8;color:#333}
+  .output-body.empty{color:#ccc;font-style:italic;display:flex;align-items:center;justify-content:center;min-height:280px}
+  .output-body.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;gap:12px}
+  .spinner{width:36px;height:36px;border:3px solid #fde68a;border-top-color:#d97706;border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:#aaa;font-size:13px}
+
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+  .length-group{display:flex;gap:8px;align-items:center}
+  .length-label{font-size:13px;color:#888;font-weight:500}
+  .length-btn{border:1.5px solid #e0e0d8;background:#fff;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#555;transition:all 0.15s;font-family:'Manrope',sans-serif}
+  .length-btn.active,.length-btn:hover{border-color:#d97706;color:#d97706;background:#fff9ee}
+  .spacer{flex:1}
+  .summarize-btn{
+    background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:10px;
+    padding:12px 28px;color:#fff;font-weight:700;font-size:14px;letter-spacing:0.5px;
+    cursor:pointer;transition:all 0.2s;font-family:'Manrope',sans-serif;box-shadow:0 4px 16px rgba(217,119,6,0.25);
+  }
+  .summarize-btn:hover{box-shadow:0 6px 24px rgba(217,119,6,0.4);transform:translateY(-1px)}
+  .summarize-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+  .copy-btn{border:1.5px solid #e0e0d8;background:#fff;border-radius:10px;padding:12px 20px;font-size:13px;cursor:pointer;color:#777;transition:all 0.15s;font-family:'Manrope',sans-serif}
+  .copy-btn:hover{border-color:#ccc;background:#f9f9f6}
+  .error{background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:16px;color:#dc2626;font-size:14px;margin-bottom:20px}
+  .stats-bar{display:flex;gap:20px;padding:12px 20px;background:#f9f9f6;border-top:1px solid #f0f0e8;font-size:12px;color:#aaa}
+  .stat{display:flex;gap:4px;align-items:center}
+  .stat strong{color:#777;font-weight:600}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="tag">✦ AI Powered</div>
+    <h1>Summarize any text<br>with <em>clarity</em></h1>
+    <p class="desc">Paste any article, document, or text — our AI distills it into a concise, readable summary in seconds.</p>
+  </div>
+
+  <div class="controls">
+    <span class="length-label">Length:</span>
+    <div class="length-group">
+      <button class="length-btn" data-len="brief" onclick="setLen(this)">Brief</button>
+      <button class="length-btn active" data-len="balanced" onclick="setLen(this)">Balanced</button>
+      <button class="length-btn" data-len="detailed" onclick="setLen(this)">Detailed</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+    <button class="summarize-btn" id="sum-btn" onclick="summarize()">✦ Summarize</button>
+  </div>
+
+  <div id="error-box" class="error" style="display:none"></div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Input Text</span>
+        <span class="count" id="wc">0 words</span>
+      </div>
+      <textarea id="input-text" placeholder="Paste your article, essay, report, or any text here…" oninput="countWords()"></textarea>
+    </div>
+    <div class="panel output-panel">
+      <div class="panel-header">
+        <span class="panel-title">Summary</span>
+        <span class="count" id="swc"></span>
+      </div>
+      <div class="output-body empty" id="output">Your summary will appear here…</div>
+      <div class="stats-bar" id="stats-bar" style="display:none">
+        <div class="stat">Original: <strong id="orig-words"></strong> words</div>
+        <div class="stat">Summary: <strong id="sum-words"></strong> words</div>
+        <div class="stat">Reduction: <strong id="reduction"></strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedLen = 'balanced';
+function setLen(btn) {
+  document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); selectedLen = btn.dataset.len;
+}
+function countWords() {
+  const t = document.getElementById('input-text').value.trim();
+  const n = t ? t.split(/\s+/).length : 0;
+  document.getElementById('wc').textContent = n + ' words';
+}
+function copyResult() {
+  const out = document.getElementById('output');
+  if (out.classList.contains('empty') || out.classList.contains('loading')) return;
+  navigator.clipboard.writeText(out.textContent).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 1500);
+  });
+}
+
+const lenMap = {brief:'2-3 sentences',balanced:'one concise paragraph',detailed:'2-3 detailed paragraphs'};
+
+async function summarize() {
+  const text = document.getElementById('input-text').value.trim();
+  if (!text || text.split(/\s+/).length < 20) {
+    showError('Please enter at least 20 words to summarize.'); return;
+  }
+  hideError();
+  const btn = document.getElementById('sum-btn');
+  btn.disabled = true; btn.textContent = 'Summarizing…';
+  const out = document.getElementById('output');
+  out.className = 'output-body loading';
+  out.innerHTML = '<div class="spinner"></div><div class="loading-text">Reading and summarizing…</div>';
+  document.getElementById('stats-bar').style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Summarize the following text in ${lenMap[selectedLen]}. Be clear, accurate, and capture the main points. Output ONLY the summary, no preamble.\n\n${text}`
+        }]
+      })
+    });
+    const data = await res.json();
+    const summary = data.content?.[0]?.text || 'Could not generate summary.';
+    out.className = 'output-body';
+    out.textContent = summary;
+    const origW = text.split(/\s+/).length;
+    const sumW = summary.split(/\s+/).length;
+    document.getElementById('orig-words').textContent = origW;
+    document.getElementById('sum-words').textContent = sumW;
+    document.getElementById('reduction').textContent = Math.round((1 - sumW/origW)*100) + '%';
+    document.getElementById('swc').textContent = sumW + ' words';
+    document.getElementById('stats-bar').style.display = 'flex';
+  } catch(e) {
+    out.className = 'output-body empty'; out.textContent = 'Your summary will appear here…';
+    showError('Error connecting to AI. Please try again.');
+  }
+  btn.disabled = false; btn.textContent = '✦ Summarize';
+}
+
+function showError(msg) {
+  const e = document.getElementById('error-box');
+  e.textContent = '⚠ ' + msg; e.style.display = 'block';
+}
+function hideError() { document.getElementById('error-box').style.display = 'none'; }
+</script>
+</body>
+</html>
