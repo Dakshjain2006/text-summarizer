@@ -3,7 +3,7 @@
 An AI-powered text summarization tool using Anthropic Claude API.
 
 ## 🚀 Live Demo
-[dakshjain.github.io/text-summarizer](https://dakshjain.github.io/text-summarizer)
+[Dakshjain2006.github.io/text-summarizer](https://Dakshjain2006.github.io/text-summarizer)
 
 ## ✨ Features
 - 3 summary lengths: Brief · Balanced · Detailed
@@ -21,13 +21,5 @@ text-summarizer/
 ├── style.css     ← Warm minimal styles
 ├── script.js     ← API call & UI logic
 └── README.md
-```
-
-## 🏃 Run Locally
-```bash
-git clone https://github.com/dakshjain/text-summarizer
-open index.html
-```
-
 ---
 Built by **Daksh Jain** · B.Tech CSAI, NSUT
