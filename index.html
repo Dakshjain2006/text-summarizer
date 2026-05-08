@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Text Summarizer — Daksh Jain</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="tag">✦ AI Powered</div>
+      <h1>Summarize any text<br>with <em>clarity</em></h1>
+      <p class="desc">Paste any article, document, or text — our AI distills it into a concise, readable summary in seconds.</p>
+    </div>
+
+    <div class="controls">
+      <span class="length-label">Length:</span>
+      <div class="length-group">
+        <button class="length-btn"        data-len="brief"    onclick="setLen(this)">Brief</button>
+        <button class="length-btn active" data-len="balanced" onclick="setLen(this)">Balanced</button>
+        <button class="length-btn"        data-len="detailed" onclick="setLen(this)">Detailed</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="copy-btn"      onclick="copyResult()">📋 Copy</button>
+      <button class="summarize-btn" id="sum-btn" onclick="summarize()">✦ Summarize</button>
+    </div>
+
+    <div id="error-box" class="error" style="display:none"></div>
+
+    <div class="main-grid">
+      <!-- Input -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Input Text</span>
+          <span class="count" id="wc">0 words</span>
+        </div>
+        <textarea id="input-text" placeholder="Paste your article, essay, report, or any text here…" oninput="countWords()"></textarea>
+      </div>
+
+      <!-- Output -->
+      <div class="panel output-panel">
+        <div class="panel-header">
+          <span class="panel-title">Summary</span>
+          <span class="count" id="swc"></span>
+        </div>
+        <div class="output-body empty" id="output">Your summary will appear here…</div>
+        <div class="stats-bar" id="stats-bar" style="display:none">
+          <div class="stat">Original: <strong id="orig-words"></strong> words</div>
+          <div class="stat">Summary:  <strong id="sum-words"></strong> words</div>
+          <div class="stat">Reduction: <strong id="reduction"></strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
